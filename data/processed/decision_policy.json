@@ -1,0 +1,105 @@
+{
+  "version": "1.0",
+  "default": {
+    "urgency": "MODERATE",
+    "condition": "Undetermined Emergency",
+    "actions": [
+      "Stabilize patient",
+      "Monitor vitals",
+      "Escalate to senior clinician"
+    ]
+  },
+  "disaster_actions": {
+    "flood": [
+      "Move to higher ground immediately",
+      "Avoid contact with flood water and electrical hazards",
+      "Use clean drinking water and contamination control"
+    ],
+    "earthquake": [
+      "Take cover and protect head-neck immediately",
+      "Move away from glass, unstable walls, and falling objects",
+      "Evacuate to open safe assembly area after shaking stops"
+    ],
+    "heatwave": [
+      "Move patient to shaded or cooled area",
+      "Start oral or IV rehydration based on condition",
+      "Actively cool body and monitor temperature"
+    ],
+    "default": [
+      "Move to designated safe zone",
+      "Establish triage point",
+      "Coordinate evacuation and hazard control"
+    ]
+  },
+  "rules": [
+    {
+      "id": "cardiac_red_flags",
+      "emergency_types": ["cardiac"],
+      "any_phrases": ["chest pain", "left arm", "jaw pain", "ecg", "sweating"],
+      "urgency": "CRITICAL",
+      "condition": "Acute Coronary Syndrome",
+      "actions": [
+        "Administer oxygen",
+        "Give aspirin if not contraindicated",
+        "Perform ECG immediately",
+        "Activate cardiac response team"
+      ],
+      "reason": "cardiac red flags"
+    },
+    {
+      "id": "respiratory_distress",
+      "emergency_types": ["respiratory"],
+      "any_phrases": ["shortness of breath", "cannot breathe", "spo2", "wheezing"],
+      "urgency": "HIGH",
+      "condition": "Acute Respiratory Distress",
+      "actions": [
+        "Support airway",
+        "Start oxygen therapy",
+        "Assess SpO2 and respiratory rate",
+        "Prepare nebulization or intubation pathway"
+      ],
+      "reason": "respiratory distress"
+    },
+    {
+      "id": "neurological_deficit",
+      "emergency_types": ["neurological"],
+      "any_phrases": ["slurred speech", "facial droop", "seizure", "stroke", "one sided weakness"],
+      "urgency": "CRITICAL",
+      "condition": "Acute Neurological Emergency",
+      "actions": [
+        "Activate stroke or seizure protocol",
+        "Check glucose and airway",
+        "Arrange urgent neuro-imaging",
+        "Continuous neuro-vitals monitoring"
+      ],
+      "reason": "neurological deficit"
+    },
+    {
+      "id": "trauma_hemorrhage",
+      "emergency_types": ["trauma"],
+      "any_phrases": ["active bleeding", "hemorrhage", "fracture", "accident", "wound"],
+      "urgency": "HIGH",
+      "condition": "Trauma / Hemorrhage",
+      "actions": [
+        "Control bleeding with direct pressure",
+        "Immobilize injured area",
+        "Establish IV access and fluids",
+        "Prepare rapid transfer"
+      ],
+      "reason": "trauma indicators"
+    },
+    {
+      "id": "infection_risk",
+      "emergency_types": ["infection"],
+      "any_phrases": ["sepsis", "high fever", "chills", "infection"],
+      "urgency": "HIGH",
+      "condition": "Severe Infection Risk",
+      "actions": [
+        "Obtain vitals and sepsis screening",
+        "Start infection control precautions",
+        "Prepare broad-spectrum treatment pathway"
+      ],
+      "reason": "infection risk"
+    }
+  ]
+}

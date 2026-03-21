@@ -1,0 +1,190 @@
+{
+  "version": "1.0",
+  "generated_for": "PranaAI large-scale validation",
+  "cases": [
+    {
+      "id": "med_cardiac_01",
+      "domain": "medical",
+      "category": "cardiac",
+      "title": "STEMI risk with prolonged pain",
+      "query": "Severe crushing chest pain radiating to left arm and jaw, diaphoresis, shortness of breath, nausea, near syncope",
+      "context": "History: hypertension, dyslipidemia, diabetes, family history premature CAD.\nMedications: irregular antiplatelet adherence, beta blocker, statin.\nRecent notes: prior troponin rise and intermittent ST changes, exertional angina episodes, delayed cath-lab access.\nLarge context block: repeated telemetry concerns, unstable blood pressure trend, transfer delays, repeated chest pain escalation, oxygen fluctuation, nurse escalation logs.\nLarge context block: repeated telemetry concerns, unstable blood pressure trend, transfer delays, repeated chest pain escalation, oxygen fluctuation, nurse escalation logs.\nLarge context block: repeated telemetry concerns, unstable blood pressure trend, transfer delays, repeated chest pain escalation, oxygen fluctuation, nurse escalation logs."
+    },
+    {
+      "id": "med_cardiac_02",
+      "domain": "medical",
+      "category": "cardiac",
+      "title": "Post-op cardiac instability",
+      "query": "Chest tightness, cold sweats, tachycardia, breathlessness after surgery",
+      "context": "History: recent abdominal surgery, anemia, CKD stage 2, hypertension.\nPost-op trend: HR 130-145, episodic hypotension, concern for demand ischemia.\nLarge context: serial nurse notes of pain escalation and oxygen requirement increase.\nLarge context: serial nurse notes of pain escalation and oxygen requirement increase.\nLarge context: serial nurse notes of pain escalation and oxygen requirement increase."
+    },
+    {
+      "id": "med_resp_01",
+      "domain": "medical",
+      "category": "respiratory",
+      "title": "Acute asthma decompensation",
+      "query": "Cannot breathe, severe wheeze, speaking in single words, accessory muscle use",
+      "context": "History: brittle asthma, prior ICU admission, poor inhaler adherence.\nCurrent: SpO2 dips to 86% on room air, RR > 34, tachycardia.\nLarge context: repeated bronchodilator logs, delayed response to therapy, escalating respiratory fatigue.\nLarge context: repeated bronchodilator logs, delayed response to therapy, escalating respiratory fatigue."
+    },
+    {
+      "id": "med_resp_02",
+      "domain": "medical",
+      "category": "respiratory",
+      "title": "COPD exacerbation with hypoxia",
+      "query": "Severe shortness of breath, confusion, low oxygen and cyanosis",
+      "context": "History: COPD Gold D, home oxygen use, frequent infections.\nCurrent: productive cough, altered mental status, probable hypercapnia.\nLarge context: long chronic history notes, multiple prior admissions, repeated respiratory decline episodes.\nLarge context: long chronic history notes, multiple prior admissions, repeated respiratory decline episodes."
+    },
+    {
+      "id": "med_neuro_01",
+      "domain": "medical",
+      "category": "neurological",
+      "title": "Acute stroke window",
+      "query": "Sudden slurred speech, right facial droop, unilateral weakness, confusion",
+      "context": "History: atrial fibrillation, prior TIA, anticoagulant noncompliance.\nTimeline: last known well 45 minutes ago.\nLarge context: serial neuro checks showing progression of deficits and blood pressure instability.\nLarge context: serial neuro checks showing progression of deficits and blood pressure instability."
+    },
+    {
+      "id": "med_neuro_02",
+      "domain": "medical",
+      "category": "neurological",
+      "title": "Seizure with postictal compromise",
+      "query": "Generalized seizure followed by unresponsiveness and shallow breathing",
+      "context": "History: epilepsy with missed doses, recent sleep deprivation.\nCurrent: prolonged postictal state, concern for aspiration, low oxygen episodes.\nLarge context: nursing narrative with repeated airway repositioning and recurrent seizure concern.\nLarge context: nursing narrative with repeated airway repositioning and recurrent seizure concern."
+    },
+    {
+      "id": "med_trauma_01",
+      "domain": "medical",
+      "category": "trauma",
+      "title": "Polytrauma with hemorrhage",
+      "query": "Road traffic collision, active bleeding, hypotension, decreased consciousness",
+      "context": "History: anticoagulant therapy, prior orthopedic surgery.\nCurrent: suspected pelvic fracture, weak pulses, prolonged extrication.\nLarge context: repeated scene logs, blood loss estimates, transport delay risks, shock signs.\nLarge context: repeated scene logs, blood loss estimates, transport delay risks, shock signs."
+    },
+    {
+      "id": "med_trauma_02",
+      "domain": "medical",
+      "category": "trauma",
+      "title": "Industrial crush injury",
+      "query": "Crush injury with severe pain, swelling, bleeding, and low blood pressure",
+      "context": "History: no chronic disease known, prolonged entrapment.\nCurrent: concern for compartment syndrome and rhabdomyolysis.\nLarge context: repeated vitals and fluid response logs across transfer stages.\nLarge context: repeated vitals and fluid response logs across transfer stages."
+    },
+    {
+      "id": "med_infection_01",
+      "domain": "medical",
+      "category": "infection",
+      "title": "Sepsis progression",
+      "query": "High fever, chills, confusion, hypotension, low urine output",
+      "context": "History: recurrent UTI, CKD stage 3, immunosuppressant treatment.\nCurrent: tachycardia, elevated lactate, possible septic shock trajectory.\nLarge context: extensive sepsis bundle timeline, fluid response logs, antimicrobial timing notes.\nLarge context: extensive sepsis bundle timeline, fluid response logs, antimicrobial timing notes."
+    },
+    {
+      "id": "med_infection_02",
+      "domain": "medical",
+      "category": "infection",
+      "title": "Pneumonia with deterioration",
+      "query": "Fever, cough, breathlessness, drowsiness and oxygen drop",
+      "context": "History: elderly, diabetes, prior aspiration risk.\nCurrent: bilateral infiltrates suspected, high respiratory demand.\nLarge context: prolonged ward updates and repeated antibiotic adjustments.\nLarge context: prolonged ward updates and repeated antibiotic adjustments."
+    },
+    {
+      "id": "med_obstetric_01",
+      "domain": "medical",
+      "category": "obstetric",
+      "title": "Postpartum hemorrhage risk",
+      "query": "Heavy bleeding after delivery, dizziness, tachycardia, low blood pressure",
+      "context": "History: prolonged labor, anemia, prior PPH.\nCurrent: ongoing blood loss, reduced urine output, escalating hemodynamic instability.\nLarge context: repeated obstetric monitoring notes, fluid/blood product requests, transfer escalations.\nLarge context: repeated obstetric monitoring notes, fluid/blood product requests, transfer escalations."
+    },
+    {
+      "id": "med_pediatric_01",
+      "domain": "medical",
+      "category": "pediatric",
+      "title": "Pediatric severe dehydration",
+      "query": "Child with lethargy, sunken eyes, persistent vomiting and reduced urine",
+      "context": "History: recent gastroenteritis outbreak in locality.\nCurrent: poor oral intake, tachycardia, prolonged capillary refill.\nLarge context: repeated caregiver notes, ORS attempts, escalation markers across shifts.\nLarge context: repeated caregiver notes, ORS attempts, escalation markers across shifts."
+    },
+    {
+      "id": "dis_flood_01",
+      "domain": "disaster",
+      "category": "flood",
+      "title": "Flood mass casualty with contamination",
+      "query": "Rising flood waters, isolated households, contaminated water, multiple injuries",
+      "context": "Operations: blocked roads, unstable bridge, limited rescue boats.\nHealth risks: diarrheal spread, skin infections, dehydration clusters.\nLarge context: repeated district updates, shelter occupancy changes, route status revisions, water safety alerts.\nLarge context: repeated district updates, shelter occupancy changes, route status revisions, water safety alerts."
+    },
+    {
+      "id": "dis_flood_02",
+      "domain": "disaster",
+      "category": "flood",
+      "title": "Urban flash flood response",
+      "query": "Rapid urban flooding, trapped families, power lines down, emergency access blocked",
+      "context": "Operations: high-voltage hazard and sewage overflow.\nLarge context: repeated municipal incident feeds, rescue requests, vulnerability mapping updates.\nLarge context: repeated municipal incident feeds, rescue requests, vulnerability mapping updates."
+    },
+    {
+      "id": "dis_earthquake_01",
+      "domain": "disaster",
+      "category": "earthquake",
+      "title": "Earthquake building collapse",
+      "query": "Major tremor with building collapse, entrapment, glass injuries, panic crowd movement",
+      "context": "Operations: aftershock warning, unstable structures, triage point overload.\nLarge context: repeated SAR updates, casualty tagging revisions, transport corridor block alerts.\nLarge context: repeated SAR updates, casualty tagging revisions, transport corridor block alerts."
+    },
+    {
+      "id": "dis_earthquake_02",
+      "domain": "disaster",
+      "category": "earthquake",
+      "title": "Aftershock shelter evacuation",
+      "query": "Shelter damage risk after aftershocks, vulnerable elderly and children need relocation",
+      "context": "Operations: secondary shelter opening, route safety uncertainty, supply chain delay.\nLarge context: repeated safety inspection notes and shelter capacity rebalancing updates.\nLarge context: repeated safety inspection notes and shelter capacity rebalancing updates."
+    },
+    {
+      "id": "dis_heatwave_01",
+      "domain": "disaster",
+      "category": "heatwave",
+      "title": "Heatwave vulnerable cluster",
+      "query": "Extreme heat, dehydration, confusion in elderly cluster, limited cooling support",
+      "context": "Operations: cooling shelters saturated, hydration stock low, ambulance demand surge.\nLarge context: repeated regional alerts, mortality risk maps, rotating outreach team notes.\nLarge context: repeated regional alerts, mortality risk maps, rotating outreach team notes."
+    },
+    {
+      "id": "dis_heatwave_02",
+      "domain": "disaster",
+      "category": "heatwave",
+      "title": "Industrial heat exposure event",
+      "query": "Factory workers collapsing due to heat stress and dehydration",
+      "context": "Operations: shift crowding, poor ventilation, delayed medical transport.\nLarge context: repeated occupational incident logs and batch triage coordination notes.\nLarge context: repeated occupational incident logs and batch triage coordination notes."
+    },
+    {
+      "id": "dis_cyclone_01",
+      "domain": "disaster",
+      "category": "cyclone",
+      "title": "Cyclone landfall evacuation",
+      "query": "Cyclone landfall with high wind damage, coastal flooding, communications disruption",
+      "context": "Operations: phased evacuation, shelter prioritization, generator failures.\nLarge context: repeated forecast updates, route closure logs, resource movement summaries.\nLarge context: repeated forecast updates, route closure logs, resource movement summaries."
+    },
+    {
+      "id": "dis_landslide_01",
+      "domain": "disaster",
+      "category": "landslide",
+      "title": "Landslide village isolation",
+      "query": "Rain-triggered landslide, homes damaged, road blocked, injured residents stranded",
+      "context": "Operations: geotechnical instability ongoing, helicopter support uncertain.\nLarge context: repeated terrain risk updates, casualty transfer challenges, weather interruptions.\nLarge context: repeated terrain risk updates, casualty transfer challenges, weather interruptions."
+    },
+    {
+      "id": "dis_wildfire_01",
+      "domain": "disaster",
+      "category": "wildfire",
+      "title": "Wildfire smoke and burns",
+      "query": "Wildfire spread with smoke inhalation cases, burns, evacuation congestion",
+      "context": "Operations: air quality severe, shelter smoke infiltration risk, pediatric respiratory burden.\nLarge context: repeated fireline updates, wind shift alerts, evacuation corridor reassignments.\nLarge context: repeated fireline updates, wind shift alerts, evacuation corridor reassignments."
+    },
+    {
+      "id": "dis_chemical_01",
+      "domain": "disaster",
+      "category": "chemical_spill",
+      "title": "Chemical spill exposure",
+      "query": "Industrial chemical leak with eye irritation, breathing difficulty, contamination concern",
+      "context": "Operations: exclusion zones, decontamination queue, PPE shortage warnings.\nLarge context: repeated hazmat advisories, plume model updates, hospital intake coordination notes.\nLarge context: repeated hazmat advisories, plume model updates, hospital intake coordination notes."
+    },
+    {
+      "id": "dis_masscasualty_01",
+      "domain": "disaster",
+      "category": "mass_casualty",
+      "title": "Stadium crowd crush",
+      "query": "Crowd crush incident with multiple trauma, respiratory distress and triage overload",
+      "context": "Operations: scene congestion, rapid triage needed, transport bottleneck.\nLarge context: repeated incident command updates, ambulance dispatch surges, casualty category churn.\nLarge context: repeated incident command updates, ambulance dispatch surges, casualty category churn."
+    }
+  ]
+}
