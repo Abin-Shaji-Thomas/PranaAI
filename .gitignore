@@ -24,6 +24,9 @@ dist/
 embeddings/*.index
 embeddings/*.pkl
 *.db
+data/processed/retrieval_index/docs.json
+data/processed/retrieval_index/embeddings.npy
+data/processed/retrieval_index/
 
 # Logs
 *.log
