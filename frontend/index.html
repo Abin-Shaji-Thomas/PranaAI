@@ -3,66 +3,1882 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PranaAI Triage Assistant</title>
+  <title>PranaAI Emergency Triage</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f6f8fc; color: #1b1f2a; }
-    .wrap { max-width: 900px; margin: 24px auto; padding: 16px; }
-    .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 8px 20px rgba(0,0,0,.08); }
-    h1 { margin: 0 0 8px; }
-    .muted { color: #5f6b7a; margin-bottom: 16px; }
-    label { font-weight: bold; display: block; margin: 12px 0 6px; }
-    textarea { width: 100%; min-height: 90px; padding: 10px; border: 1px solid #d9e0ea; border-radius: 8px; }
-    button { margin-top: 14px; background: #3056d3; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+    :root {
+      --bg: #f3f6fd;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --ok: #059669;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --border: #e5e7eb;
+      --soft: #eef2ff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      margin: 0;
+      background: radial-gradient(circle at top right, #e8efff 0, var(--bg) 45%);
+      color: var(--text);
+      font-size: 16px;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    .wrap {
+      max-width: min(1900px, 97vw);
+      margin: 28px auto;
+      padding: 0 16px 24px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .wrap.with-results {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      align-items: stretch;
+    }
+
+    .wrap.with-results .header {
+      grid-column: 1 / -1;
+    }
+
+    .wrap.with-results #inputPanel,
+    .wrap.with-results #resultPanel {
+      min-height: auto;
+      height: auto;
+      overflow: visible;
+    }
+
+    .header {
+      background: linear-gradient(145deg, #1d4ed8, #2563eb);
+      color: #fff;
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.26);
+    }
+
+    .header h1 { margin: 0 0 8px; font-size: 34px; }
+    .header p { margin: 0; opacity: 0.95; font-size: 17px; }
+
+    .header-grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+    }
+
+    .header-chip {
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .backend-banner {
+      display: none;
+      border-radius: 12px;
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: #991b1b;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .backend-banner.good {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+      color: #166534;
+    }
+
+    .panel {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 22px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+      backdrop-filter: saturate(1.08);
+      transition: transform .28s ease, box-shadow .28s ease, opacity .35s ease;
+    }
+
+    .panel.flow-in {
+      animation: panelIn .42s ease;
+    }
+
+    .reveal-item {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .4s ease, transform .4s ease;
+      will-change: opacity, transform;
+    }
+
+    .reveal-item.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes panelIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .panel h3 {
+      margin: 10px 0 8px;
+      font-size: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 16px;
+      font-weight: 700;
+      margin: 12px 0 8px;
+      letter-spacing: .2px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 170px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.45;
+      resize: vertical;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nurse-note {
+      margin-top: 14px;
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      color: #1e3a8a;
+      line-height: 1.5;
+    }
+
+    .nurse-note strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .form-split {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+      margin-top: 8px;
+    }
+
+    .quick-row {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .quick-grid {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      margin-top: 8px;
+    }
+
+    .chip {
+      border: 1px solid #c7d2fe;
+      background: #eef2ff;
+      color: #3730a3;
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .chip:hover { background: #e0e7ff; }
+
+    .chip.big {
+      text-align: left;
+      border-radius: 10px;
+      font-size: 14px;
+      min-height: 76px;
+      line-height: 1.35;
+    }
+
+    .mini-note {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .upload-row {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 150px 140px 1fr auto;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .upload-row select,
+    .upload-row input[type="file"] {
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 15px;
+      background: #fff;
+    }
+
+    .toggle-row {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      color: #1f2937;
+    }
+
+    button {
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--primary-dark); }
     button:disabled { opacity: .6; cursor: not-allowed; }
-    pre { white-space: pre-wrap; background: #0b1220; color: #d9e8ff; padding: 12px; border-radius: 8px; margin-top: 14px; }
+
+    button,
+    .chip,
+    .metric,
+    .handoff-card,
+    .readiness-item,
+    .check-item,
+    .timing-item {
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    button:hover,
+    .chip:hover,
+    .metric:hover,
+    .handoff-card:hover,
+    .readiness-item:hover,
+    .check-item:hover,
+    .timing-item:hover {
+      transform: translateY(-1px);
+    }
+
+    .status {
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .status.working { color: #1e40af; font-weight: 700; }
+    .status.good { color: #065f46; font-weight: 700; }
+    .status.warn { color: #92400e; font-weight: 700; }
+    .status.bad { color: #991b1b; font-weight: 700; }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+
+    .metric {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fcfdff;
+    }
+
+    .metric .k {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .metric .v {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .metric .sub {
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+
+    .critical { background: #fee2e2; color: var(--danger); }
+    .high { background: #ffedd5; color: var(--warn); }
+    .moderate { background: #fef9c3; color: #92400e; }
+    .low { background: #dcfce7; color: var(--ok); }
+
+    .ok-badge { background: #dcfce7; color: #065f46; }
+    .warn-badge { background: #fff7ed; color: #9a3412; }
+    .bad-badge { background: #fee2e2; color: #991b1b; }
+
+    ul { margin: 8px 0 0; padding-left: 18px; }
+    li { margin: 7px 0; font-size: 15px; }
+
+    .reason {
+      margin-top: 8px;
+      color: #374151;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    pre {
+      margin-top: 10px;
+      background: #0b1220;
+      color: #dbeafe;
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+
+    .primary-action {
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 8px;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .readiness-list {
+      margin-top: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .readiness-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: #fcfdff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+    }
+
+    details {
+      margin-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .compare-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      margin-top: 8px;
+    }
+
+    .timing-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      margin-top: 8px;
+    }
+
+    .timing-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fcfdff;
+    }
+
+    .timing-item .t-k {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      color: var(--muted);
+    }
+
+    .timing-item .t-v {
+      margin-top: 4px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .compare-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+
+    .section-title {
+      margin-top: 16px;
+      margin-bottom: 8px;
+      font-size: 21px;
+      font-weight: 800;
+      color: #1f2937;
+      border-left: 4px solid #93c5fd;
+      padding-left: 8px;
+    }
+
+    .compression-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .bar-wrap {
+      margin-top: 8px;
+      width: 100%;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #2563eb);
+      width: 0;
+      transition: width .35s ease;
+    }
+
+    .dual-bars {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 80px;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .bar-track {
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      height: 8px;
+    }
+
+    .bar-before,
+    .bar-after {
+      height: 100%;
+      width: 0;
+      transition: width .35s ease;
+    }
+
+    .bar-before { background: #93c5fd; }
+    .bar-after { background: #2563eb; }
+
+    .handoff-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .handoff-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fcfdff;
+    }
+
+    .kv-grid {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: 130px 1fr;
+      font-size: 15px;
+    }
+
+    .kv-grid .k { color: var(--muted); font-weight: 700; }
+
+    .staff-checklist {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .check-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px;
+      font-size: 15px;
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .check-ok { color: #065f46; font-weight: 700; }
+    .check-warn { color: #9a3412; font-weight: 700; }
+
+    .pill-row {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 6px 11px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .tools-row {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tools-row select {
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 15px;
+      background: #fff;
+    }
+
+    .sample-browser {
+      margin-top: 10px;
+      border: 1px solid #dbeafe;
+      background: #f8fbff;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .sample-browser .tools-row {
+      margin-top: 0;
+    }
+
+    .muted-small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .report-box {
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #f8fafc;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .monitor-card {
+      margin-top: 14px;
+      border: 1px solid #dbeafe;
+      background: #f8fbff;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .monitor-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #1e40af;
+      margin-bottom: 8px;
+    }
+
+    .monitor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+    }
+
+    .monitor-item {
+      border: 1px solid #dbeafe;
+      border-radius: 10px;
+      padding: 8px;
+      background: #fff;
+    }
+
+    .monitor-item .mk {
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      margin-bottom: 3px;
+    }
+
+    .monitor-item .mv {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    @media (min-width: 1600px) {
+      .wrap {
+        max-width: min(1920px, 96vw);
+        gap: 18px;
+      }
+
+      .header {
+        padding: 22px 24px;
+      }
+
+      .header h1 {
+        font-size: 38px;
+      }
+
+      .header p {
+        font-size: 18px;
+      }
+
+      .panel {
+        padding: 26px;
+      }
+
+      .section-title {
+        font-size: 23px;
+      }
+
+      textarea {
+        min-height: 200px;
+        font-size: 16px;
+      }
+
+      .grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .timing-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .compression-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .handoff-grid,
+      .compare-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .upload-row {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row {
+        grid-template-columns: 80px 1fr 60px;
+      }
+
+      .form-split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 1350px) {
+      .wrap.with-results {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        height: auto;
+        overflow: visible;
+      }
+
+      .wrap.with-results #inputPanel,
+      .wrap.with-results #resultPanel {
+        height: auto;
+        overflow: visible;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .form-split {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <h1>🚑 PranaAI — Real-Time Emergency Triage Assistant</h1>
-      <div class="muted">Prototype UI (Frontend + Backend)</div>
+    <div id="backendBanner" class="backend-banner"></div>
 
-      <label>Symptoms</label>
-      <textarea id="symptoms" placeholder="patient with chest pain, sweating, shortness of breath"></textarea>
+    <div class="header">
+      <h1>🚑 PranaAI — Emergency Triage Assistant</h1>
+      <p>Clinical-grade triage dashboard with context pruning, ScaleDown compression visibility, and full evidence trace.</p>
+      <div class="header-grid">
+        <div class="header-chip">⚡ Fast Mode: Deterministic clinical actions</div>
+        <div class="header-chip">🧠 Full Mode: Deep reasoning + safety floor</div>
+        <div class="header-chip">📉 Compression: before/after token impact</div>
+        <div class="header-chip">🩺 Handoff: staff-ready operational details</div>
+      </div>
+    </div>
 
-      <label>Patient History (optional)</label>
-      <textarea id="history" placeholder="2019 hypertension&#10;2023 high cholesterol&#10;2012 dental surgery"></textarea>
+    <div class="panel" id="inputPanel">
+      <div class="tools-row" style="margin-bottom: 8px;">
+        <select id="domainSelect">
+          <option value="medical">medical</option>
+          <option value="disaster">disaster</option>
+        </select>
+        <select id="modeSelect">
+          <option value="auto">mode: auto</option>
+          <option value="fast" selected>mode: fast</option>
+          <option value="full">mode: full (background refinement)</option>
+        </select>
+      </div>
 
-      <button id="runBtn">Analyze Triage</button>
-      <pre id="out">Run analysis to see result...</pre>
+      <div class="toggle-row">
+        <input type="checkbox" id="strictSlaToggle" checked />
+        <label for="strictSlaToggle" style="margin:0; font-weight:600;">Strict SLA mode (instant preliminary; full refinement runs in background for deep output)</label>
+      </div>
+
+      <div class="nurse-note">
+        <strong>Clinical Workflow (Quick Use)</strong>
+        1) Enter current symptoms/incident details and relevant history/context.<br>
+        2) Click Analyze Triage and review urgency + immediate first action.<br>
+        3) Use Medical Staff Handoff Report (copy/print/download) for handover.
+      </div>
+
+      <div class="form-split">
+        <div>
+          <label id="queryLabel">Symptoms (required)</label>
+          <textarea id="symptoms" placeholder="Example: severe chest pain, sweating, shortness of breath, pain radiating to left arm"></textarea>
+        </div>
+        <div>
+          <label id="contextLabel">Patient History / Protocol Context (optional)</label>
+          <textarea id="history" placeholder="Example: 2012 dental surgery&#10;2023 hypertension&#10;2024 high cholesterol"></textarea>
+        </div>
+      </div>
+
+      <div class="section-title">Clinical Sample Packs</div>
+      <div class="mini-note">Load realistic, larger emergency scenarios for full-flow testing.</div>
+      <div class="quick-grid">
+        <button class="chip big" type="button" id="caseCardiac">Cardiac Shock Case<br><span class="muted-small">ACS + high-risk history</span></button>
+        <button class="chip big" type="button" id="caseStroke">Acute Stroke Case<br><span class="muted-small">Neuro deficits + timeline</span></button>
+        <button class="chip big" type="button" id="caseSepsis">Sepsis Risk Case<br><span class="muted-small">Infection progression signals</span></button>
+        <button class="chip big" type="button" id="caseTrauma">Polytrauma Case<br><span class="muted-small">Bleeding + transport constraints</span></button>
+        <button class="chip big" type="button" id="caseFlood">Flood Mass Casualty<br><span class="muted-small">Evacuation + contamination</span></button>
+        <button class="chip big" type="button" id="caseHeatwave">Heatwave Cluster Case<br><span class="muted-small">Dehydration + vulnerable groups</span></button>
+      </div>
+
+      <div class="sample-browser">
+        <div class="tools-row">
+          <select id="sampleCategorySelect">
+            <option value="all">All Categories</option>
+          </select>
+          <select id="sampleCaseSelect">
+            <option value="">Loading sample library...</option>
+          </select>
+          <button class="chip" type="button" id="loadSelectedSample">Load Selected</button>
+          <button class="chip" type="button" id="loadRandomSample">Load Random</button>
+        </div>
+        <div class="mini-note" id="sampleLibraryMeta">Library: loading...</div>
+      </div>
+      <div class="mini-note" id="inputStats">Input size: 0 chars / 0 approx tokens / 0 lines</div>
+
+      <div class="actions">
+        <button id="runBtn">Analyze Triage</button>
+        <button id="clearBtn" type="button">Clear</button>
+        <div class="status" id="status">Ready</div>
+      </div>
+
+      <div class="monitor-card">
+        <div class="monitor-title">System Monitor</div>
+        <div class="monitor-grid" id="monitorGrid"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="resultPanel" style="display:none;">
+      <div class="grid" id="summaryGrid"></div>
+
+      <div class="section-title">Medical Staff Handoff Report</div>
+      <div class="tools-row">
+        <button type="button" id="copyReportBtn">Copy Report</button>
+        <button type="button" id="printReportBtn">Print Report</button>
+        <button type="button" id="downloadJsonBtn">Download JSON</button>
+      </div>
+      <div class="report-box" id="handoffReport">Run analysis to generate report.</div>
+
+      <div class="section-title">Immediate Next Best Action</div>
+      <div class="primary-action" id="primaryAction">No action yet.</div>
+
+      <div class="section-title">Clinical Handoff Details</div>
+      <div class="handoff-grid">
+        <div class="handoff-card">
+          <h3 style="margin-top:0">Case Metadata</h3>
+          <div class="kv-grid" id="metaGrid"></div>
+          <div class="pill-row" id="structuredPills"></div>
+        </div>
+        <div class="handoff-card">
+          <h3 style="margin-top:0">Medical Staff Checklist</h3>
+          <div class="staff-checklist" id="staffChecklist"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Recommended Actions</div>
+      <ul id="actionsList"></ul>
+
+      <div class="section-title">Clinical Reason</div>
+      <div class="reason" id="reasonText"></div>
+
+      <div class="section-title">Real-Time Readiness Check</div>
+      <div class="readiness-list" id="readinessList"></div>
+
+      <div class="section-title">Pipeline Timing Breakdown</div>
+      <div class="timing-grid" id="timingGrid"></div>
+
+      <div class="section-title">Grounding Evidence</div>
+      <ul id="evidenceList"></ul>
+
+      <div class="section-title">Compression Intelligence (Before vs After)</div>
+      <div class="compression-grid" id="compressionGrid"></div>
+      <div class="dual-bars">
+        <div class="bar-row">
+          <div>Original</div>
+          <div class="bar-track"><div id="barOriginal" class="bar-before"></div></div>
+          <div id="barOriginalLabel">0</div>
+        </div>
+        <div class="bar-row">
+          <div>Compressed</div>
+          <div class="bar-track"><div id="barCompressed" class="bar-after"></div></div>
+          <div id="barCompressedLabel">0</div>
+        </div>
+      </div>
+
+      <div class="section-title">Intelligent Context Pruning Agent</div>
+      <div class="compression-grid" id="pruningIntelGrid"></div>
+      <div class="compare-grid" style="margin-top:8px;">
+        <div>
+          <div class="compare-title">Kept Useful Examples</div>
+          <pre id="keptExamplesOut"></pre>
+        </div>
+        <div>
+          <div class="compare-title">Dropped Noise Examples</div>
+          <pre id="droppedNoiseOut"></pre>
+        </div>
+      </div>
+
+      <div class="section-title">ScaleDown Context Comparison</div>
+      <div class="compare-grid">
+        <div>
+          <div class="compare-title">Raw Input Context</div>
+          <pre id="rawInputOut"></pre>
+        </div>
+        <div>
+          <div class="compare-title">Pruned Context</div>
+          <pre id="prunedOut"></pre>
+        </div>
+        <div>
+          <div class="compare-title">Before (Natural Context)</div>
+          <pre id="beforeOut"></pre>
+        </div>
+        <div>
+          <div class="compare-title">After (Compressed Context)</div>
+          <pre id="afterOut"></pre>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <script>
+    const API_BASE = window.location.protocol === 'file:' ? 'http://127.0.0.1:8000' : '';
+    const wrapEl = document.querySelector('.wrap');
+
     const runBtn = document.getElementById('runBtn');
-    const out = document.getElementById('out');
+    const clearBtn = document.getElementById('clearBtn');
+    const domainSelect = document.getElementById('domainSelect');
+    const modeSelect = document.getElementById('modeSelect');
+    const strictSlaToggle = document.getElementById('strictSlaToggle');
+    const queryLabel = document.getElementById('queryLabel');
+    const contextLabel = document.getElementById('contextLabel');
+    const statusEl = document.getElementById('status');
+    const panel = document.getElementById('resultPanel');
+    const summaryGrid = document.getElementById('summaryGrid');
+    const actionsList = document.getElementById('actionsList');
+    const evidenceList = document.getElementById('evidenceList');
+    const reasonText = document.getElementById('reasonText');
+    const primaryAction = document.getElementById('primaryAction');
+    const readinessList = document.getElementById('readinessList');
+    const timingGrid = document.getElementById('timingGrid');
+    const compressionGrid = document.getElementById('compressionGrid');
+    const pruningIntelGrid = document.getElementById('pruningIntelGrid');
+    const metaGrid = document.getElementById('metaGrid');
+    const structuredPills = document.getElementById('structuredPills');
+    const staffChecklist = document.getElementById('staffChecklist');
+    const rawInputOut = document.getElementById('rawInputOut');
+    const prunedOut = document.getElementById('prunedOut');
+    const beforeOut = document.getElementById('beforeOut');
+    const afterOut = document.getElementById('afterOut');
+    const keptExamplesOut = document.getElementById('keptExamplesOut');
+    const droppedNoiseOut = document.getElementById('droppedNoiseOut');
+    const barOriginal = document.getElementById('barOriginal');
+    const barCompressed = document.getElementById('barCompressed');
+    const barOriginalLabel = document.getElementById('barOriginalLabel');
+    const barCompressedLabel = document.getElementById('barCompressedLabel');
+    const caseCardiac = document.getElementById('caseCardiac');
+    const caseStroke = document.getElementById('caseStroke');
+    const caseSepsis = document.getElementById('caseSepsis');
+    const caseTrauma = document.getElementById('caseTrauma');
+    const caseFlood = document.getElementById('caseFlood');
+    const caseHeatwave = document.getElementById('caseHeatwave');
+    const inputStats = document.getElementById('inputStats');
+    const sampleCategorySelect = document.getElementById('sampleCategorySelect');
+    const sampleCaseSelect = document.getElementById('sampleCaseSelect');
+    const loadSelectedSample = document.getElementById('loadSelectedSample');
+    const loadRandomSample = document.getElementById('loadRandomSample');
+    const sampleLibraryMeta = document.getElementById('sampleLibraryMeta');
+    const handoffReport = document.getElementById('handoffReport');
+    const copyReportBtn = document.getElementById('copyReportBtn');
+    const printReportBtn = document.getElementById('printReportBtn');
+    const downloadJsonBtn = document.getElementById('downloadJsonBtn');
+    const backendBanner = document.getElementById('backendBanner');
+    const monitorGrid = document.getElementById('monitorGrid');
+    let lastResponse = null;
+    let revealObserver = null;
+    let backendOnline = true;
+    const monitorState = {
+      healthStatus: 'unknown',
+      policyHealthy: 'unknown',
+      policyVersion: '-',
+      rulesCount: 0,
+      requestCount: 0,
+      retriesUsed: 0,
+      lastPath: '-',
+      lastStatus: '-',
+      lastError: '-',
+      lastServerMs: '-',
+      latencyTrend: [],
+      lastProbeAt: '-',
+    };
+    const sampleState = {
+      library: [],
+      filtered: [],
+      version: '-',
+    };
+
+    const API_TIMEOUT_MS = 30000;
+    const API_RETRY_COUNT = 2;
+
+    function asNum(value, fallback = 0) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function approxTokensFromText(text) {
+      return Math.max(0, Math.round((text || '').length / 4));
+    }
+
+    function countLines(text) {
+      if (!text) return 0;
+      return String(text).split('\n').filter((line) => line.trim().length > 0).length;
+    }
+
+    function setStatus(message, tone = 'muted') {
+      statusEl.textContent = message;
+      statusEl.className = `status ${tone}`;
+    }
+
+    function renderMonitor() {
+      const trend = monitorState.latencyTrend.length ? monitorState.latencyTrend.join(' / ') : 'n/a';
+      monitorGrid.innerHTML = `
+        <div class="monitor-item"><div class="mk">Backend</div><div class="mv">${monitorState.healthStatus}</div></div>
+        <div class="monitor-item"><div class="mk">Policy</div><div class="mv">${monitorState.policyHealthy} (v${monitorState.policyVersion})</div></div>
+        <div class="monitor-item"><div class="mk">Rules Loaded</div><div class="mv">${monitorState.rulesCount}</div></div>
+        <div class="monitor-item"><div class="mk">Requests</div><div class="mv">${monitorState.requestCount}</div></div>
+        <div class="monitor-item"><div class="mk">Retries Used</div><div class="mv">${monitorState.retriesUsed}</div></div>
+        <div class="monitor-item"><div class="mk">Last Path</div><div class="mv">${monitorState.lastPath}</div></div>
+        <div class="monitor-item"><div class="mk">Last Status</div><div class="mv">${monitorState.lastStatus}</div></div>
+        <div class="monitor-item"><div class="mk">Server Latency</div><div class="mv">${monitorState.lastServerMs}</div></div>
+        <div class="monitor-item"><div class="mk">Latency Trend</div><div class="mv">${trend}</div></div>
+        <div class="monitor-item"><div class="mk">Last Health Probe</div><div class="mv">${monitorState.lastProbeAt}</div></div>
+        <div class="monitor-item"><div class="mk">Last Error</div><div class="mv">${monitorState.lastError}</div></div>
+      `;
+    }
+
+    function getRevealObserver() {
+      if (revealObserver) {
+        return revealObserver;
+      }
+      revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, {
+        root: null,
+        threshold: 0.15,
+      });
+      return revealObserver;
+    }
+
+    function applyRevealAnimations() {
+      const observer = getRevealObserver();
+      const targets = panel.querySelectorAll('.section-title, .metric, .report-box, .primary-action, .handoff-card, .readiness-item, .timing-item, .check-item, .compare-grid > div');
+      targets.forEach((item, index) => {
+        item.classList.remove('in-view');
+        item.classList.add('reveal-item');
+        item.style.transitionDelay = `${Math.min(index * 16, 180)}ms`;
+        observer.observe(item);
+      });
+    }
+
+    function _escapeHtml(value) {
+      return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function renderSampleCategoryOptions() {
+      const categories = Array.from(new Set(sampleState.library.map((item) => String(item.category || 'general')))).sort();
+      sampleCategorySelect.innerHTML = ['<option value="all">All Categories</option>']
+        .concat(categories.map((category) => `<option value="${_escapeHtml(category)}">${_escapeHtml(category)}</option>`))
+        .join('');
+    }
+
+    function renderSampleCaseOptions() {
+      const category = sampleCategorySelect.value || 'all';
+      const domain = domainSelect.value || 'medical';
+      sampleState.filtered = sampleState.library.filter((item) => {
+        const sameDomain = String(item.domain || '').toLowerCase() === domain;
+        const sameCategory = category === 'all' || String(item.category || '') === category;
+        return sameDomain && sameCategory;
+      });
+
+      if (!sampleState.filtered.length) {
+        sampleCaseSelect.innerHTML = '<option value="">No cases for selected filter</option>';
+        return;
+      }
+
+      sampleCaseSelect.innerHTML = sampleState.filtered
+        .map((item) => {
+          const lines = Number(item.context_lines || 0);
+          return `<option value="${_escapeHtml(item.id)}">${_escapeHtml(item.title)} (${_escapeHtml(item.category)}) - ${lines} lines</option>`;
+        })
+        .join('');
+    }
+
+    function loadCaseFromLibrary(caseId) {
+      const found = sampleState.library.find((item) => String(item.id) === String(caseId));
+      if (!found) {
+        setStatus('Sample case not found in library.', 'warn');
+        return;
+      }
+
+      domainSelect.value = String(found.domain || 'medical');
+      updateInputFormatByDomain();
+
+      const query = String(found.query || '').trim();
+      const context = String(found.context || '').trim();
+      fillCase(query, context);
+      setStatus(`Loaded sample: ${found.title} (${Number(found.context_lines || countLines(context))} lines)`, 'good');
+      renderSampleCaseOptions();
+      sampleCaseSelect.value = String(found.id);
+    }
+
+    async function loadSampleLibrary() {
+      try {
+        const res = await apiFetch('/sample-cases', {}, 1, 12000);
+        const payload = await parseApiResponse(res);
+        if (!res.ok) {
+          throw new Error(payload.detail || 'Unable to fetch sample library');
+        }
+
+        const cases = Array.isArray(payload.cases) ? payload.cases : [];
+        sampleState.library = cases;
+        sampleState.version = String(payload.version || '-');
+        renderSampleCategoryOptions();
+        renderSampleCaseOptions();
+        const totalLines = cases.reduce((sum, item) => sum + Number(item?.context_lines || 0), 0);
+        const avgLines = cases.length ? Math.round(totalLines / cases.length) : 0;
+        sampleLibraryMeta.textContent = `Library v${sampleState.version}: ${cases.length} large test cases loaded (${avgLines} avg lines/case)`;
+      } catch (error) {
+        sampleState.library = [];
+        sampleState.filtered = [];
+        sampleCaseSelect.innerHTML = '<option value="">Sample library unavailable</option>';
+        sampleLibraryMeta.textContent = `Library unavailable: ${error.message || 'error'}`;
+      }
+    }
+
+    function showBackendBanner(message, tone = 'bad') {
+      backendBanner.textContent = message;
+      backendBanner.style.display = 'block';
+      backendBanner.className = `backend-banner ${tone}`;
+    }
+
+    function hideBackendBanner() {
+      backendBanner.style.display = 'none';
+      backendBanner.textContent = '';
+      backendBanner.className = 'backend-banner';
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function fetchWithTimeout(url, options = {}, timeoutMs = API_TIMEOUT_MS) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    async function apiFetch(path, options = {}, retries = API_RETRY_COUNT, timeoutMs = API_TIMEOUT_MS) {
+      const url = `${API_BASE}${path}`;
+      let lastError = null;
+      let retriesSpent = 0;
+
+      for (let attempt = 0; attempt <= retries; attempt += 1) {
+        try {
+          const response = await fetchWithTimeout(url, options, timeoutMs);
+          monitorState.requestCount += 1;
+          monitorState.lastPath = path;
+          monitorState.lastStatus = String(response.status);
+          monitorState.lastError = '-';
+          const serverMs = response.headers.get('X-Response-Time-Ms');
+          monitorState.lastServerMs = serverMs ? `${serverMs} ms` : '-';
+          if (serverMs) {
+            monitorState.latencyTrend.push(`${Number(serverMs).toFixed(0)}ms`);
+            if (monitorState.latencyTrend.length > 6) {
+              monitorState.latencyTrend = monitorState.latencyTrend.slice(-6);
+            }
+          }
+          monitorState.retriesUsed += retriesSpent;
+          renderMonitor();
+          if (!backendOnline) {
+            backendOnline = true;
+            showBackendBanner('Backend connection restored.', 'good');
+            setTimeout(() => {
+              if (backendOnline) {
+                hideBackendBanner();
+              }
+            }, 3000);
+          }
+          return response;
+        } catch (error) {
+          lastError = error;
+          if (attempt < retries) {
+            retriesSpent += 1;
+            await sleep(700 * (attempt + 1));
+            continue;
+          }
+        }
+      }
+
+      backendOnline = false;
+      monitorState.requestCount += 1;
+      monitorState.lastPath = path;
+      monitorState.lastStatus = 'error';
+      monitorState.lastError = lastError?.name === 'AbortError' ? 'timeout' : (lastError?.message || 'network_error');
+      monitorState.retriesUsed += retriesSpent;
+      renderMonitor();
+      showBackendBanner('Backend is disconnected or busy. Retrying health checks automatically...', 'bad');
+      throw new Error(lastError?.name === 'AbortError' ? 'Request timed out. Backend may be overloaded.' : (lastError?.message || 'Network error'));
+    }
+
+    async function probeBackendHealth() {
+      try {
+        const res = await fetchWithTimeout(`${API_BASE}/health`, {}, 6000);
+        if (!res.ok) {
+          throw new Error(`health status ${res.status}`);
+        }
+        const payload = await parseApiResponse(res);
+        monitorState.healthStatus = 'online';
+        monitorState.lastProbeAt = new Date().toLocaleTimeString();
+        if (!backendOnline) {
+          backendOnline = true;
+          showBackendBanner('Backend health recovered and is reachable.', 'good');
+          setTimeout(() => {
+            if (backendOnline) {
+              hideBackendBanner();
+            }
+          }, 3000);
+        }
+
+        const policy = payload?.decision_policy || {};
+        monitorState.policyHealthy = policy?.healthy === true ? 'healthy' : (policy?.healthy === false ? 'warning' : 'unknown');
+        monitorState.policyVersion = policy?.version || '-';
+        monitorState.rulesCount = Number(policy?.rules_count || 0);
+        renderMonitor();
+        if (policy?.healthy === false) {
+          showBackendBanner(`Policy warning: ${String((policy.validation_errors || []).join(', ') || 'validation issue')}`, 'bad');
+        }
+      } catch {
+        backendOnline = false;
+        monitorState.healthStatus = 'offline';
+        monitorState.lastProbeAt = new Date().toLocaleTimeString();
+        renderMonitor();
+        showBackendBanner('Cannot reach backend health endpoint. Keep server running at the selected API base.', 'bad');
+      }
+    }
+
+    function updateInputStats() {
+      const query = document.getElementById('symptoms').value || '';
+      const context = document.getElementById('history').value || '';
+      const all = `${query}\n${context}`;
+      if (inputStats) {
+        inputStats.textContent = `Input size: ${all.length} chars / ${approxTokensFromText(all)} approx tokens / ${countLines(all)} lines`;
+      }
+    }
+
+    function mixedUsefulUselessBlock(seedTitle, targetLines = 140) {
+      const useful = [
+        `${seedTitle}: clinical red-flag progression noted; monitor deterioration closely.`,
+        `${seedTitle}: vitals trend captured (HR/RR/BP/SpO2) and reassessment timeline updated.`,
+        `${seedTitle}: medication/allergy verification pending before intervention escalation.`,
+        `${seedTitle}: transport/escalation constraints documented with backup pathway.`
+      ];
+      const useless = [
+        `${seedTitle}: admin footer text, legal disclaimer, and generic website content.`,
+        `${seedTitle}: duplicate clerical log entry repeated from merged documents.`,
+        `${seedTitle}: billing and registration chatter unrelated to acute care decisioning.`
+      ];
+
+      const lines = [];
+      for (let idx = 1; idx <= targetLines; idx += 1) {
+        if (idx % 5 === 0 || idx % 7 === 0) {
+          lines.push(`[${String(idx).padStart(3, '0')}] ${useless[idx % useless.length]}`);
+        } else {
+          lines.push(`[${String(idx).padStart(3, '0')}] ${useful[idx % useful.length]}`);
+        }
+      }
+      return lines.join('\n');
+    }
+
+    async function parseApiResponse(res) {
+      const rawText = await res.text();
+      let body = {};
+      try {
+        body = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        body = { detail: rawText || `HTTP ${res.status}` };
+      }
+      return body;
+    }
+
+    async function pollRefinement(requestId, maxAttempts = 12) {
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const res = await apiFetch(`/triage/refinement/${requestId}`, {}, 1, 12000);
+        const data = await parseApiResponse(res);
+        if (!res.ok) {
+          setStatus(`Refinement error: ${data.detail || 'Unknown'}`, 'bad');
+          return;
+        }
+        if (data.status === 'complete' && data.result) {
+          setSummary(data.result);
+          setStatus('Refinement complete (full mode result loaded).', 'good');
+          return;
+        }
+        if (data.status === 'error') {
+          setStatus(`Refinement failed: ${data.error || 'Unknown error'}`, 'bad');
+          return;
+        }
+      }
+      setStatus('Preliminary result shown. Full refinement still pending.', 'warn');
+    }
+
+    function updateInputFormatByDomain() {
+      const domain = domainSelect.value;
+      const symptomsEl = document.getElementById('symptoms');
+      const historyEl = document.getElementById('history');
+
+      if (domain === 'disaster') {
+        queryLabel.textContent = 'Incident Details (required)';
+        contextLabel.textContent = 'Local Situation Notes (optional)';
+        symptomsEl.placeholder = 'Example: flood water rising, blocked bridge, contamination risk near shelter camp';
+        historyEl.placeholder = 'Example: evacuation route B available, sector 12 high-risk elderly population, oxygen supply low';
+      } else {
+        queryLabel.textContent = 'Symptoms (required)';
+        contextLabel.textContent = 'Patient History / Protocol Context (optional)';
+        symptomsEl.placeholder = 'Example: severe chest pain, sweating, shortness of breath, pain radiating to left arm';
+        historyEl.placeholder = 'Example: 2012 dental surgery\n2023 hypertension\n2024 high cholesterol';
+      }
+    }
+
+    function urgencyClass(value) {
+      const u = String(value || '').toUpperCase();
+      if (u === 'CRITICAL') return 'critical';
+      if (u === 'HIGH') return 'high';
+      if (u === 'LOW') return 'low';
+      return 'moderate';
+    }
+
+    function urgencyActionWindow(urgencyValue) {
+      const urgency = String(urgencyValue || '').toUpperCase();
+      if (urgency === 'CRITICAL') return 'Immediate response: activate rapid/emergency team now';
+      if (urgency === 'HIGH') return 'Urgent response: physician-led intervention now';
+      if (urgency === 'MODERATE') return 'Prompt response: assess and treat soon with close monitoring';
+      if (urgency === 'LOW') return 'Routine response: standard pathway and scheduled review';
+      return 'Priority window not available';
+    }
+
+    function formatClinicalPriority(urgencyValue, severityBandValue) {
+      const urgency = String(urgencyValue || '').toUpperCase().trim();
+      const severityBand = String(severityBandValue || '').toUpperCase().trim();
+      if (!urgency && !severityBand) {
+        return 'Priority not assigned';
+      }
+      if (urgency && severityBand && urgency !== severityBand) {
+        return `Urgency: ${urgency} | Severity Band: ${severityBand}`;
+      }
+      return `Priority: ${urgency || severityBand}`;
+    }
+
+    function buildStaffChecklist(data) {
+      const domain = String(data?.input_format?.domain || '').toLowerCase();
+      const urgency = String(data?.urgency || '').toUpperCase();
+      const severityBand = String(data?.severity_score?.band || '').toUpperCase();
+      const priorityLabel = formatClinicalPriority(urgency, severityBand);
+      const actionWindow = urgencyActionWindow(urgency || severityBand);
+      const actions = Array.isArray(data?.recommended_actions) ? data.recommended_actions : [];
+      const compression = data?.context_stats?.compression || {};
+      const pruning = data?.context_stats?.pruning || {};
+      const structured = data?.structured_input || {};
+      const parsedSymptoms = Array.isArray(structured?.symptoms) ? structured.symptoms : [];
+      const parsedHistory = Array.isArray(structured?.history) ? structured.history : [];
+
+      const hasAirwayAction = actions.some((item) => /airway|oxygen|spo2/i.test(item));
+      const hasEscalationAction = actions.some((item) => /activate|rapid|urgent|transport|team/i.test(item));
+      const hasMonitoringAction = actions.some((item) => /monitor|vitals|continuous|reassess/i.test(item));
+      const hasMedicationSafety = /medication|allergy|drug|anticoagulant|insulin/i.test((data?.reason || '') + ' ' + actions.join(' '));
+      const hasDisasterOps = actions.some((item) => /evacuation|shelter|route|command|hazmat|contamination/i.test(item));
+      const hasClinicalOps = actions.some((item) => /ecg|troponin|sepsis|stroke|bleeding|trauma|airway/i.test(item));
+      const pruneRatio = Number(pruning.reduction_ratio || 0);
+      const criticalRetention = Number(pruning.critical_retention_ratio || 0);
+      const latencyTotal = Number(data?.latency_ms?.total || 0);
+      const hasScaleDown = Boolean(compression?.attempted_scaledown);
+      const scaleDownSuccess = Boolean(compression?.successful);
+      const evidenceCount = (data?.evidence_snippets || []).length;
+
+      const checks = [
+        { label: 'Urgency and severity assigned', ok: Boolean(urgency || severityBand) && data?.severity_score?.score !== undefined, detail: `${priorityLabel} • ${actionWindow}` },
+        { label: 'Critical symptom extraction', ok: parsedSymptoms.length > 0, detail: `${parsedSymptoms.length} parsed symptom signals` },
+        { label: 'History/situation signal extraction', ok: parsedHistory.length > 0, detail: `${parsedHistory.length} parsed history signals` },
+        { label: 'Immediate airway/oxygen consideration', ok: hasAirwayAction || ['LOW', 'MODERATE'].includes(urgency), detail: hasAirwayAction ? 'present' : 'not explicit' },
+        { label: 'Escalation/transfer pathway', ok: hasEscalationAction || ['LOW'].includes(urgency), detail: hasEscalationAction ? 'present' : 'not explicit' },
+        { label: 'Monitoring/reassessment plan', ok: hasMonitoringAction, detail: hasMonitoringAction ? 'present' : 'add monitoring order' },
+        { label: domain === 'disaster' ? 'Disaster operations actions present' : 'Clinical intervention actions present', ok: domain === 'disaster' ? hasDisasterOps : hasClinicalOps, detail: domain === 'disaster' ? (hasDisasterOps ? 'present' : 'not explicit') : (hasClinicalOps ? 'present' : 'not explicit') },
+        { label: 'Medication/allergy safety signal', ok: hasMedicationSafety || domain === 'disaster', detail: hasMedicationSafety ? 'present' : (domain === 'disaster' ? 'n/a disaster flow' : 'not explicit') },
+        { label: 'Intelligent pruning quality', ok: pruneRatio >= 0.2, detail: `${(pruneRatio * 100).toFixed(1)}% reduced` },
+        { label: 'Critical retention after pruning', ok: criticalRetention >= 0.7, detail: `${(criticalRetention * 100).toFixed(1)}% retained` },
+        { label: 'ScaleDown compression execution', ok: hasScaleDown && scaleDownSuccess, detail: hasScaleDown ? (scaleDownSuccess ? 'successful' : 'fallback') : 'not attempted' },
+        { label: 'Evidence snippets attached', ok: evidenceCount > 0, detail: `${evidenceCount} snippets` },
+        { label: 'Operational latency awareness', ok: latencyTotal > 0, detail: `${latencyTotal.toFixed(2)} ms total` },
+      ];
+
+      staffChecklist.innerHTML = checks.map((item) => `
+        <div class="check-item">
+          <span>${item.label}</span>
+          <span class="${item.ok ? 'check-ok' : 'check-warn'}">${item.ok ? '✅' : '⚠️'} ${item.detail}</span>
+        </div>
+      `).join('');
+    }
+
+    function setCompressionBars(originalTokens, compressedTokens) {
+      const max = Math.max(1, originalTokens, compressedTokens);
+      const beforeWidth = Math.max(3, Math.round((originalTokens / max) * 100));
+      const afterWidth = Math.max(3, Math.round((compressedTokens / max) * 100));
+      barOriginal.style.width = `${beforeWidth}%`;
+      barCompressed.style.width = `${afterWidth}%`;
+      barOriginalLabel.textContent = `${originalTokens} tok`;
+      barCompressedLabel.textContent = `${compressedTokens} tok`;
+    }
+
+    function renderStructuredInput(structured) {
+      const symptoms = Array.isArray(structured?.symptoms) ? structured.symptoms : [];
+      const history = Array.isArray(structured?.history) ? structured.history : [];
+      const disaster = structured?.disaster || 'none';
+      structuredPills.innerHTML = '';
+
+      const addPill = (label) => {
+        const el = document.createElement('div');
+        el.className = 'pill';
+        el.textContent = label;
+        structuredPills.appendChild(el);
+      };
+
+      addPill(`disaster: ${disaster}`);
+      symptoms.slice(0, 8).forEach((item) => addPill(`symptom: ${item}`));
+      history.slice(0, 8).forEach((item) => addPill(`history: ${item}`));
+    }
+
+    function buildHandoffReport(data) {
+      const now = new Date().toLocaleString();
+      const actions = Array.isArray(data?.recommended_actions) ? data.recommended_actions : [];
+      const compression = data?.context_stats?.compression || {};
+      const pruning = data?.context_stats?.pruning || {};
+      const structured = data?.structured_input || {};
+      const latency = data?.latency_ms || {};
+      const parsedSymptoms = Array.isArray(structured?.symptoms) ? structured.symptoms : [];
+      const parsedHistory = Array.isArray(structured?.history) ? structured.history : [];
+      const priorityLabel = formatClinicalPriority(data?.urgency, data?.severity_score?.band);
+      const actionWindow = urgencyActionWindow(data?.urgency || data?.severity_score?.band);
+      const lines = [
+        `PranaAI Clinical Handoff Report`,
+        `Generated: ${now}`,
+        `Request ID: ${data?.request_id || 'n/a'}`,
+        `Response Type: ${data?.response_type || 'final'}`,
+        `Mode: ${data?.execution_mode || 'n/a'} (${data?.mode_decision?.reason || 'n/a'})`,
+        `Domain: ${data?.input_format?.domain || 'n/a'}`,
+        `Emergency Type: ${data?.emergency_type || 'n/a'}`,
+        `Condition: ${data?.possible_condition || 'n/a'}`,
+        `Urgency: ${data?.urgency || 'n/a'}`,
+        `Severity Score: ${data?.severity_score?.score ?? 'n/a'} (${data?.severity_score?.band || 'n/a'})`,
+        `Clinical Priority (Clear): ${priorityLabel}`,
+        `Action Window: ${actionWindow}`,
+        `Parsed Symptoms: ${parsedSymptoms.slice(0, 12).join(', ') || 'n/a'}`,
+        `Parsed History Signals: ${parsedHistory.slice(0, 12).join(', ') || 'n/a'}`,
+        `Primary Action: ${actions[0] || 'n/a'}`,
+        `All Actions:`,
+        ...actions.map((item, index) => `  ${index + 1}. ${item}`),
+        `Clinical Reason: ${data?.reason || 'n/a'}`,
+        `Pruning Intelligence: total_segments=${pruning?.total_segments ?? 0}, useful_detected=${pruning?.useful_segments_detected ?? 0}, noise_detected=${pruning?.noise_segments_detected ?? 0}, kept_useful=${pruning?.kept_useful_segments ?? 0}, dropped_noise=${pruning?.dropped_noise_segments ?? 0}`,
+        `Compression: attempted=${Boolean(compression?.attempted_scaledown)} used=${Boolean(compression?.used_scaledown)} successful=${Boolean(compression?.successful)}`,
+        `ScaleDown Proof: provider=${compression?.provider || 'n/a'}, model=${compression?.scaledown_model || 'n/a'}, request_id=${compression?.provider_request_id || 'n/a'}`,
+        `Token Stats: source=${compression?.source_tokens ?? 0} original=${compression?.original_tokens ?? 0} compressed=${compression?.compressed_tokens ?? 0} saved=${compression?.tokens_saved ?? 0}`,
+        `Latency(ms): classify=${latency?.classification ?? 0}, retrieval=${latency?.retrieval ?? 0}, prune=${latency?.pruning ?? 0}, compress=${latency?.compression ?? 0}, llm=${latency?.llm ?? 0}, total=${latency?.total ?? 0}`,
+      ];
+      return lines.join('\n');
+    }
+
+    function setSummary(data) {
+      const compression = data?.context_stats?.compression || {};
+      const latency = data?.latency_ms || {};
+      const severity = data?.severity_score || {};
+      const pruning = data?.context_stats?.pruning || {};
+      const structured = data?.structured_input || {};
+      const executionMode = data?.execution_mode || modeSelect.value;
+      const modeDecision = data?.mode_decision || {};
+      const attemptedScaledown = Boolean(compression.attempted_scaledown);
+      const scaledownText = attemptedScaledown
+        ? (compression.used_scaledown ? 'Used' : 'Attempted (fallback)')
+        : 'Skipped';
+
+      const sourceTokens = asNum(compression.source_tokens, asNum(compression.original_tokens, 0));
+      const originalTokens = asNum(compression.original_tokens, sourceTokens);
+      const compressedTokens = asNum(compression.compressed_tokens, originalTokens);
+      const rawContextText = data?.context_comparison?.raw_input_context || '';
+      const sourceChars = asNum(pruning.original_chars, rawContextText.length || (beforeOut.textContent || '').length);
+      const prunedChars = asNum(pruning.pruned_chars, (data?.context_comparison?.pruned_context || '').length || (prunedOut.textContent || '').length);
+      const compressedChars = (data?.context_comparison?.compressed_context || '').length;
+      const rawLines = countLines(rawContextText);
+      const prunedLines = countLines(data?.context_comparison?.pruned_context || '');
+      const compressedLines = countLines(data?.context_comparison?.compressed_context || '');
+      const usefulSegments = asNum(pruning.useful_segments_detected, 0);
+      const noiseSegments = asNum(pruning.noise_segments_detected, 0);
+      const keptUseful = asNum(pruning.kept_useful_segments, 0);
+      const droppedNoise = asNum(pruning.dropped_noise_segments, 0);
+      const totalSegments = asNum(pruning.total_segments, 0);
+      const tokensSaved = asNum(compression.tokens_saved, Math.max(0, originalTokens - compressedTokens));
+      const savingsPercent = asNum(compression.savings_percent, 0);
+
+      const targetMet = Boolean(latency.target_under_500ms);
+      const pruneRatio = Number(pruning.reduction_ratio || 0);
+      const pruningBadge = pruneRatio >= 0.35
+        ? '<span class="badge ok-badge">GOOD</span>'
+        : pruneRatio >= 0.2
+          ? '<span class="badge warn-badge">MEDIUM</span>'
+          : '<span class="badge bad-badge">LOW</span>';
+
+      summaryGrid.innerHTML = `
+        <div class="metric"><div class="k">Mode</div><div class="v" style="font-size:16px">${executionMode}</div></div>
+        <div class="metric"><div class="k">Mode Decision</div><div class="v" style="font-size:14px">${modeDecision.reason || 'n/a'}</div><div class="sub">requested: ${modeDecision.requested_mode || modeSelect.value}</div></div>
+        <div class="metric"><div class="k">Response Type</div><div class="v" style="font-size:16px">${data.response_type || 'final'}</div><div class="sub">${data.strict_sla_mode || 'standard'}</div></div>
+        <div class="metric"><div class="k">Emergency Type</div><div class="v">${data.emergency_type || 'N/A'}</div></div>
+        <div class="metric"><div class="k">Classifier Confidence</div><div class="v">${((data.confidence || 0) * 100).toFixed(1)}%</div></div>
+        <div class="metric"><div class="k">Condition</div><div class="v" style="font-size:16px">${data.possible_condition || 'N/A'}</div></div>
+        <div class="metric"><div class="k">Urgency</div><div class="v"><span class="badge ${urgencyClass(data.urgency)}">${data.urgency || 'N/A'}</span></div><div class="sub">Severity band: ${severity.band || 'n/a'}</div></div>
+        <div class="metric"><div class="k">Severity Score</div><div class="v">${severity.score ?? 'N/A'}</div></div>
+        <div class="metric"><div class="k">Latency</div><div class="v">${latency.total ?? 'N/A'} ms</div><div class="sub"></div></div>
+        <div class="metric"><div class="k">ScaleDown</div><div class="v" style="font-size:16px">${scaledownText}</div><div class="sub">${compression.provider || 'n/a'} • ${compression.scaledown_model || 'n/a'}</div></div>
+        <div class="metric"><div class="k">Token Savings</div><div class="v" style="font-size:16px">${tokensSaved} (${savingsPercent}%)</div></div>
+        <div class="metric"><div class="k">Est. Cost Saved</div><div class="v" style="font-size:16px">$${compression.estimated_cost_saved_usd ?? 0}</div></div>
+        <div class="metric"><div class="k">Pruning Quality</div><div class="v" style="font-size:16px">${(pruneRatio * 100).toFixed(1)}%</div><div class="sub">${pruningBadge}</div></div>
+      `;
+
+      metaGrid.innerHTML = `
+        <div class="k">Request ID</div><div>${data.request_id || 'n/a'}</div>
+        <div class="k">Domain</div><div>${data?.input_format?.domain || domainSelect.value}</div>
+        <div class="k">Execution</div><div>${executionMode}</div>
+        <div class="k">Emergency Type</div><div>${data.emergency_type || 'n/a'}</div>
+        <div class="k">Decision Source</div><div>${executionMode === 'fast' ? 'Deterministic policy engine' : 'LLM + deterministic safety floor'}</div>
+        <div class="k">Refinement Status</div><div>${data.refinement_status || data.response_type || 'final'}</div>
+      `;
+      renderStructuredInput(structured);
+      buildStaffChecklist(data);
+
+      actionsList.innerHTML = '';
+      (data.recommended_actions || []).forEach((item) => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        actionsList.appendChild(li);
+      });
+
+      reasonText.textContent = data.reason || 'No reason available.';
+      evidenceList.innerHTML = '';
+      (data.evidence_snippets || []).forEach((item) => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        evidenceList.appendChild(li);
+      });
+      primaryAction.textContent = data?.recommended_actions?.[0] || 'No primary action available.';
+      readinessList.innerHTML = `
+        <div class="readiness-item"><span>Latency under 500ms</span><span>${targetMet ? '✅' : '❌'} ${(latency.total ?? 0)} ms</span></div>
+        <div class="readiness-item"><span>Noise reduction effective</span><span>${pruneRatio >= 0.35 ? '✅' : '⚠️'} ${(pruneRatio * 100).toFixed(1)}%</span></div>
+        <div class="readiness-item"><span>Compression attempted</span><span>${attemptedScaledown ? '✅' : '⚠️'} ${attemptedScaledown ? 'requested' : 'not requested'}</span></div>
+        <div class="readiness-item"><span>Compression response successful</span><span>${compression.successful ? '✅' : '⚠️'} ${compression.used_scaledown ? 'active' : 'fallback/skip'}</span></div>
+        <div class="readiness-item"><span>Clinical urgency generated</span><span>${data?.urgency ? '✅' : '❌'} ${data?.urgency || 'N/A'}</span></div>
+        <div class="readiness-item"><span>Deterministic policy compute</span><span>✅ ${data?.context_stats?.deterministic_decision_ms ?? 0} ms</span></div>
+      `;
+      timingGrid.innerHTML = `
+        <div class="timing-item"><div class="t-k">Classification</div><div class="t-v">${latency.classification ?? 0} ms</div></div>
+        <div class="timing-item"><div class="t-k">Retrieval</div><div class="t-v">${latency.retrieval ?? 0} ms</div></div>
+        <div class="timing-item"><div class="t-k">Pruning</div><div class="t-v">${latency.pruning ?? 0} ms</div></div>
+        <div class="timing-item"><div class="t-k">Compression</div><div class="t-v">${latency.compression ?? 0} ms</div></div>
+        <div class="timing-item"><div class="t-k">Deterministic Decision</div><div class="t-v">${data?.context_stats?.deterministic_decision_ms ?? 0} ms</div></div>
+        <div class="timing-item"><div class="t-k">Reasoning</div><div class="t-v">${latency.llm ?? 0} ms</div></div>
+        <div class="timing-item"><div class="t-k">Total</div><div class="t-v">${latency.total ?? 0} ms</div></div>
+      `;
+
+      compressionGrid.innerHTML = `
+        <div class="metric"><div class="k">Source Tokens</div><div class="v">${sourceTokens}</div></div>
+        <div class="metric"><div class="k">Original Tokens</div><div class="v">${originalTokens}</div></div>
+        <div class="metric"><div class="k">Compressed Tokens</div><div class="v">${compressedTokens}</div></div>
+        <div class="metric"><div class="k">Compression Ratio</div><div class="v">${asNum(compression.compression_ratio, 1).toFixed(3)}</div></div>
+        <div class="metric"><div class="k">Chars (Raw)</div><div class="v">${sourceChars}</div></div>
+        <div class="metric"><div class="k">Lines (Raw)</div><div class="v">${rawLines}</div></div>
+        <div class="metric"><div class="k">Chars (Pruned)</div><div class="v">${prunedChars}</div></div>
+        <div class="metric"><div class="k">Lines (Pruned)</div><div class="v">${prunedLines}</div></div>
+        <div class="metric"><div class="k">Chars (After)</div><div class="v">${compressedChars}</div></div>
+        <div class="metric"><div class="k">Lines (After)</div><div class="v">${compressedLines}</div></div>
+        <div class="metric"><div class="k">ScaleDown Latency</div><div class="v">${asNum(compression.latency_ms, 0)} ms</div></div>
+        <div class="metric"><div class="k">ScaleDown Provider</div><div class="v" style="font-size:14px">${compression.provider || 'n/a'}</div></div>
+        <div class="metric"><div class="k">ScaleDown Request ID</div><div class="v" style="font-size:13px">${compression.provider_request_id || 'n/a'}</div></div>
+        <div class="metric"><div class="k">ScaleDown Model</div><div class="v" style="font-size:14px">${compression.scaledown_model || 'n/a'}</div></div>
+      `;
+
+      pruningIntelGrid.innerHTML = `
+        <div class="metric"><div class="k">Total Segments</div><div class="v">${totalSegments}</div></div>
+        <div class="metric"><div class="k">Useful Detected</div><div class="v">${usefulSegments}</div></div>
+        <div class="metric"><div class="k">Noise Detected</div><div class="v">${noiseSegments}</div></div>
+        <div class="metric"><div class="k">Kept Useful</div><div class="v">${keptUseful}</div></div>
+        <div class="metric"><div class="k">Dropped Noise</div><div class="v">${droppedNoise}</div></div>
+        <div class="metric"><div class="k">Critical Retention</div><div class="v">${(asNum(pruning.critical_retention_ratio, 1) * 100).toFixed(1)}%</div></div>
+      `;
+
+      const keptExamples = Array.isArray(pruning.kept_examples) ? pruning.kept_examples : [];
+      const droppedExamples = Array.isArray(pruning.dropped_noise_examples) ? pruning.dropped_noise_examples : [];
+      keptExamplesOut.textContent = keptExamples.length
+        ? keptExamples.map((item, idx) => `${idx + 1}. [score ${item.score}] (${(item.reasons || []).join(', ')})\n${item.text}`).join('\n\n')
+        : 'No kept example data available.';
+      droppedNoiseOut.textContent = droppedExamples.length
+        ? droppedExamples.map((item, idx) => `${idx + 1}. [score ${item.score}] (${(item.reasons || []).join(', ')})\n${item.text}`).join('\n\n')
+        : 'No dropped noise example data available.';
+
+      setCompressionBars(originalTokens, compressedTokens);
+      rawInputOut.textContent = rawContextText || 'No raw input context available.';
+      prunedOut.textContent = data?.context_comparison?.pruned_context || 'No pruned context available.';
+      beforeOut.textContent = data?.context_comparison?.natural_language_context || data?.context_comparison?.pruned_context || 'No context available.';
+      afterOut.textContent = data?.context_comparison?.compressed_context || 'No compressed context available.';
+      handoffReport.textContent = buildHandoffReport(data);
+      lastResponse = data;
+      wrapEl.classList.add('with-results');
+      panel.style.display = 'block';
+      panel.classList.remove('flow-in');
+      void panel.offsetWidth;
+      panel.classList.add('flow-in');
+      applyRevealAnimations();
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function fillCase(symptoms, history) {
+      document.getElementById('symptoms').value = symptoms;
+      document.getElementById('history').value = history;
+      updateInputStats();
+      setStatus('Sample case loaded. Click Analyze Triage.', 'good');
+    }
+
+    caseCardiac.addEventListener('click', () => {
+      fillCase(
+        'Severe chest pain with diaphoresis, shortness of breath, left arm radiation, nausea, near-syncope during exertion',
+        `History: hypertension, dyslipidemia, diabetes mellitus, intermittent exertional angina episodes over 3 months.
+Medications: beta blocker, statin, irregular antiplatelet adherence.
+Recent signals: elevated troponin trend in prior visit, intermittent ECG ST depression, family history of premature cardiac death.
+      Operational: nearest cath-lab is 45 minutes away, ambulance queue delay risk, spouse reports worsening pain in last 30 minutes.
+      ${mixedUsefulUselessBlock('Cardiac emergency dossier', 120)}`
+      );
+    });
+
+    caseStroke.addEventListener('click', () => {
+      fillCase(
+        'Sudden slurred speech, right facial droop, one-sided weakness, confusion, inability to hold right arm up',
+        `History: atrial fibrillation, prior TIA, inconsistent anticoagulant use.
+Timeline: last known normal 55 minutes ago; progressive speech deterioration over 20 minutes.
+On-scene: blood pressure high, blood glucose pending, airway currently patent but drooling present.
+      Logistics: CT scanner available in 12 minutes; stroke team on partial standby.
+      ${mixedUsefulUselessBlock('Stroke pathway dossier', 120)}`
+      );
+    });
+
+    caseSepsis.addEventListener('click', () => {
+      fillCase(
+        'High fever with chills, rapid breathing, confusion, low urine output, possible infection source and hypotension',
+        `History: recent urinary infection, chronic kidney disease stage 3, immunosuppression therapy.
+Trend: fever spikes for 48 hours, worsening fatigue, poor oral intake, increasing tachycardia.
+Risk factors: possible delayed antibiotic initiation, elevated lactate in previous record, pressure sore with discharge.
+      Protocol note: sepsis bundle timing and fluid responsiveness assessment required.
+      ${mixedUsefulUselessBlock('Sepsis response dossier', 120)}`
+      );
+    });
+
+    caseTrauma.addEventListener('click', () => {
+      fillCase(
+        'High-speed road collision with active external bleeding, dizziness, reduced responsiveness, likely pelvic injury',
+        `History: patient on anticoagulant therapy; prior orthopedic fixation in lower limb.
+Scene data: prolonged extrication, large blood loss estimate, weak peripheral pulse, cold extremities.
+Transport constraints: heavy traffic and delayed trauma center handoff expected.
+      Required: hemorrhage control, damage-control resuscitation readiness, imaging prioritization after stabilization.
+      ${mixedUsefulUselessBlock('Trauma logistics dossier', 120)}`
+      );
+    });
+
+    caseFlood.addEventListener('click', () => {
+      fillCase(
+        'Flooded settlement with rising water levels, suspected contamination, isolated households, and multiple injuries',
+        `Situation: power disruption, bridge instability, blocked primary access road, children/elderly cluster in low elevation zone.
+Health risk: diarrheal outbreak signs, skin infections, dehydration, inadequate clean water supply.
+Ops status: route B partially open, rescue boat availability limited, communication intermittent.
+      Need: safe-zone triage, contamination isolation, assisted evacuation prioritization.
+      ${mixedUsefulUselessBlock('Flood field-ops dossier', 120)}`
+      );
+    });
+
+    caseHeatwave.addEventListener('click', () => {
+      fillCase(
+        'Heatwave with dizziness, dehydration, altered sensorium in elderly cluster, and reduced cooling access',
+        `Environment: prolonged 44C daytime temperature, nighttime cooling failure, overcrowded shelter.
+Risk groups: elderly with cardiovascular disease, children with reduced fluid intake, chronic kidney disease patients.
+Indicators: tachycardia, heat exhaustion progression, cramps, confusion episodes.
+      Operations: oral rehydration stock low, mobile cooling units delayed, need triage prioritization and transport coordination.
+      ${mixedUsefulUselessBlock('Heatwave cluster dossier', 120)}`
+      );
+    });
+
+    sampleCategorySelect.addEventListener('change', () => {
+      renderSampleCaseOptions();
+    });
+
+    loadSelectedSample.addEventListener('click', () => {
+      if (!sampleCaseSelect.value) {
+        setStatus('Select a sample case first.', 'warn');
+        return;
+      }
+      loadCaseFromLibrary(sampleCaseSelect.value);
+    });
+
+    loadRandomSample.addEventListener('click', () => {
+      if (!sampleState.filtered.length) {
+        setStatus('No sample cases available for current filter.', 'warn');
+        return;
+      }
+      const pick = sampleState.filtered[Math.floor(Math.random() * sampleState.filtered.length)];
+      loadCaseFromLibrary(pick.id);
+    });
 
     runBtn.addEventListener('click', async () => {
       const symptoms = document.getElementById('symptoms').value.trim();
       const patient_history = document.getElementById('history').value.trim();
+      const mode = modeSelect.value;
+      const domain = domainSelect.value;
+      const strict_sla = Boolean(strictSlaToggle.checked);
 
       if (!symptoms) {
-        out.textContent = 'Please enter symptoms.';
+        setStatus(domain === 'disaster' ? 'Please enter incident details.' : 'Please enter symptoms.', 'warn');
         return;
       }
 
       runBtn.disabled = true;
-      out.textContent = 'Analyzing...';
+      setStatus('Analyzing triage...', 'working');
       try {
-        const res = await fetch('/triage', {
+        const startedAt = performance.now();
+        const res = await apiFetch('/triage', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ symptoms, patient_history })
-        });
-        const data = await res.json();
-        out.textContent = JSON.stringify(data, null, 2);
+          body: JSON.stringify({
+            domain,
+            symptoms: domain === 'medical' ? symptoms : '',
+            incident_details: domain === 'disaster' ? symptoms : '',
+            patient_history: domain === 'medical' ? patient_history : '',
+            context_notes: domain === 'disaster' ? patient_history : '',
+            mode,
+            strict_sla,
+          })
+        }, 1, 120000);
+        const data = await parseApiResponse(res);
+        if (!res.ok) {
+          throw new Error(data.detail || 'Request failed');
+        }
+        const wallMs = performance.now() - startedAt;
+        monitorState.latencyTrend.push(`${Math.round(wallMs)}ms`);
+        if (monitorState.latencyTrend.length > 6) {
+          monitorState.latencyTrend = monitorState.latencyTrend.slice(-6);
+        }
+        renderMonitor();
+        setSummary(data);
+        if (data.response_type === 'preliminary' && data.request_id) {
+          setStatus(`Preliminary result ready. Refining in background... (${data.request_id.slice(0, 8)})`, 'warn');
+          pollRefinement(data.request_id);
+        } else {
+          setStatus('Analysis complete', 'good');
+        }
       } catch (e) {
-        out.textContent = `Error: ${e.message}`;
+        setStatus(`Error: ${e.message}`, 'bad');
       } finally {
         runBtn.disabled = false;
       }
     });
+
+    clearBtn.addEventListener('click', () => {
+      document.getElementById('symptoms').value = '';
+      document.getElementById('history').value = '';
+      panel.style.display = 'none';
+      wrapEl.classList.remove('with-results');
+      handoffReport.textContent = 'Run analysis to generate report.';
+      lastResponse = null;
+      updateInputStats();
+      setStatus('Ready', 'muted');
+    });
+
+    copyReportBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(handoffReport.textContent || '');
+        setStatus('Handoff report copied to clipboard.', 'good');
+      } catch {
+        setStatus('Clipboard copy failed. Try selecting and copying manually.', 'warn');
+      }
+    });
+
+    printReportBtn.addEventListener('click', () => {
+      const content = handoffReport.textContent || '';
+      const popup = window.open('', '_blank', 'width=900,height=700');
+      if (!popup) {
+        setStatus('Popup blocked. Allow popups to print report.', 'warn');
+        return;
+      }
+      popup.document.write(`<html><head><title>PranaAI Handoff Report</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:20px;line-height:1.45;white-space:pre-wrap;}</style></head><body>${content.replace(/</g, '&lt;')}</body></html>`);
+      popup.document.close();
+      popup.focus();
+      popup.print();
+    });
+
+    downloadJsonBtn.addEventListener('click', () => {
+      if (!lastResponse) {
+        setStatus('No analysis JSON available to download yet.', 'warn');
+        return;
+      }
+      const blob = new Blob([JSON.stringify(lastResponse, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pranaai-triage-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatus('JSON response downloaded.', 'good');
+    });
+
+    domainSelect.addEventListener('change', () => {
+      updateInputFormatByDomain();
+      renderSampleCaseOptions();
+    });
+    document.getElementById('symptoms').addEventListener('input', updateInputStats);
+    document.getElementById('history').addEventListener('input', updateInputStats);
+    updateInputFormatByDomain();
+    updateInputStats();
+    renderMonitor();
+    loadSampleLibrary();
+    probeBackendHealth();
+    setInterval(probeBackendHealth, 10000);
+
+    if (window.location.protocol === 'file:') {
+      setStatus('Opened as local file. Requests will be sent to http://127.0.0.1:8000', 'warn');
+    }
   </script>
 </body>
 </html>
