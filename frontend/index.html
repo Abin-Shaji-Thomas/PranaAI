@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PranaAI Triage Assistant</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f6f8fc; color: #1b1f2a; }
+    .wrap { max-width: 900px; margin: 24px auto; padding: 16px; }
+    .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+    h1 { margin: 0 0 8px; }
+    .muted { color: #5f6b7a; margin-bottom: 16px; }
+    label { font-weight: bold; display: block; margin: 12px 0 6px; }
+    textarea { width: 100%; min-height: 90px; padding: 10px; border: 1px solid #d9e0ea; border-radius: 8px; }
+    button { margin-top: 14px; background: #3056d3; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    pre { white-space: pre-wrap; background: #0b1220; color: #d9e8ff; padding: 12px; border-radius: 8px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>🚑 PranaAI — Real-Time Emergency Triage Assistant</h1>
+      <div class="muted">Prototype UI (Frontend + Backend)</div>
+
+      <label>Symptoms</label>
+      <textarea id="symptoms" placeholder="patient with chest pain, sweating, shortness of breath"></textarea>
+
+      <label>Patient History (optional)</label>
+      <textarea id="history" placeholder="2019 hypertension&#10;2023 high cholesterol&#10;2012 dental surgery"></textarea>
+
+      <button id="runBtn">Analyze Triage</button>
+      <pre id="out">Run analysis to see result...</pre>
+    </div>
+  </div>
+
+  <script>
+    const runBtn = document.getElementById('runBtn');
+    const out = document.getElementById('out');
+
+    runBtn.addEventListener('click', async () => {
+      const symptoms = document.getElementById('symptoms').value.trim();
+      const patient_history = document.getElementById('history').value.trim();
+
+      if (!symptoms) {
+        out.textContent = 'Please enter symptoms.';
+        return;
+      }
+
+      runBtn.disabled = true;
+      out.textContent = 'Analyzing...';
+      try {
+        const res = await fetch('/triage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ symptoms, patient_history })
+        });
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        out.textContent = `Error: ${e.message}`;
+      } finally {
+        runBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

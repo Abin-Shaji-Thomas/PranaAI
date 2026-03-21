@@ -1,0 +1,16 @@
+patient_id,age,sex,symptom_primary,hr,rr,spo2,sbp,temp_c,gcs,comorb_count,poc_lactate,time_since_arrival_min,beds_free,o2_cylinders_free,staff_on_shift,patients_waiting,time_of_day,clinician_exp_yrs,clinician_workload,self_confidence,workload_index,news_like_score,risk_deterioration_prob,resource_need,triage_label,optimizer_action,confidence_band,bias_alert,time_to_decision_sec,clinician_override
+1001,9,M,Chest Pain,96,39,97,127,37.3,9,3,1.5,146,2,3,1,3,Day,23,2,3,3,7,0.96,ICU+O2,RED,Admit ICU + Oxygen,High,—,105,FALSE
+1002,73,M,Trauma,71,22,92,109,37.1,12,1,1.8,62,5,8,3,16,Day,4,4,3,5.33,6,0.93,ICU+O2,RED,Admit ICU + Oxygen,High,—,168,FALSE
+1003,62,F,Breathlessness,55,36,80,97,37.3,11,3,1.8,23,6,5,1,2,Day,14,1,3,2,11,0.99,ICU+O2,RED,Admit ICU + Oxygen,High,—,75,FALSE
+1004,42,M,Fever,108,29,99,137,38,10,1,1,62,3,5,4,4,Night,13,4,4,1,6,0.91,ICU+O2,RED,Admit ICU + Oxygen,High,—,125,FALSE
+1005,41,F,Fever,147,32,82,150,37.3,13,1,2.7,173,5,1,4,14,Evening,11,3,4,3.5,10,0.99,ICU+O2,RED,Admit ICU + Oxygen,High,Anchoring to benign dx,130,TRUE
+1006,81,M,Abdominal Pain,52,32,79,182,37.8,11,2,1.7,67,2,4,1,19,Evening,20,1,2,19,9,0.98,ICU+O2,RED,Admit ICU + Oxygen,High,—,245,FALSE
+1007,9,F,Chest Pain,143,14,97,122,37.1,6,0,2.2,163,0,8,4,4,Evening,6,2,1,1,6,0.97,ICU+O2,RED,Stabilize on O2; Transfer ICU,High,—,85,FALSE
+1008,66,F,Chest Pain,140,19,81,89,37.3,12,2,2.7,90,0,0,3,7,Night,23,3,3,2.33,12,1,ICU+O2,RED,Emergency transfer (no O2/ICU),High,—,118,FALSE
+1009,19,M,Fever,76,22,72,169,37.8,11,2,2.6,126,3,7,4,23,Day,8,2,4,5.75,8,0.99,ICU+O2,RED,Admit ICU + Oxygen,High,Anchoring to benign dx,132,TRUE
+1010,9,M,Abdominal Pain,117,23,84,145,35.3,11,3,2.9,83,7,4,1,24,Day,13,1,4,24,10,0.99,ICU+O2,RED,Admit ICU + Oxygen,High,—,295,FALSE
+1011,50,M,Abdominal Pain,64,9,93,154,36.6,11,3,2.1,49,1,7,1,14,Day,13,3,1,14,4,0.89,ICU+O2,RED,Admit ICU + Oxygen,High,—,235,FALSE
+1012,92,F,Breathlessness,132,25,75,81,36.4,10,2,1.8,138,3,6,3,11,Evening,21,3,1,3.67,14,1,ICU+O2,RED,Admit ICU + Oxygen,High,—,132,FALSE
+1013,70,M,Chest Pain,125,12,83,107,36.2,6,1,2.1,174,5,4,1,8,Night,10,1,1,8,8,0.99,ICU+O2,RED,Admit ICU + Oxygen,High,—,135,FALSE
+1014,72,M,Sepsis Susp.,85,31,73,162,36.7,11,1,0.5,48,1,3,2,15,Evening,7,2,1,7.5,9,0.98,ICU+O2,RED,Admit ICU + Oxygen,High,—,150,FALSE
+1015,68,F,Breathlessness,52,29,90,169,38.8,13,1,0.8,140,5,6,4,14,Evening,0,1,3,3.5,6,0.89,ICU+O2,RED,Admit ICU + Oxygen,High,—,90,FALSE
